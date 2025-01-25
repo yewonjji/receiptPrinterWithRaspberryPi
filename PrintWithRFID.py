@@ -19,6 +19,9 @@ rfid_url_mapping = {
     111122223: "https://example.com/user3",
 }
 
+# 한글 폰트 경로 (Nanum Gothic 폰트 설치 필요)
+font_path = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
+
 try:
     while True:
         print("RFID 스캔 대기 중...")
@@ -45,7 +48,6 @@ try:
         draw = ImageDraw.Draw(receipt_img)
 
         # 폰트 설정
-        font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"  # 라즈베리파이 기본 폰트
         font_small = ImageFont.truetype(font_path, 26)
         font_large = ImageFont.truetype(font_path, 30)
 
