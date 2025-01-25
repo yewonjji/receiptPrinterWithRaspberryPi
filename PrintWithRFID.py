@@ -56,19 +56,23 @@ exit_label.pack(side="bottom")
 
 # 상태 메시지 업데이트 함수
 loading_dots = 0
+loading_active = False
 
 def update_status(message, loading=False):
     """상태 메시지 업데이트 함수
     - message: 기본 메시지 텍스트
     - loading: 로딩 애니메이션 활성화 여부
     """
-    global loading_dots
+    global loading_dots, loading_active
     if loading:
+        loading_active = True
         loading_dots = (loading_dots + 1) % 4  # 점 개수 (0~3)
         dots = "." * loading_dots
         status_label.config(text=f"{message}{dots}")
-        root.after(500, update_status, message, True)  # 500ms 후 다시 실행
+        if loading_active:  # 로딩 상태가 활성화된 경우에만 반복 실행
+            root.after(500, update_status, message, True)
     else:
+        loading_active = False  # 로딩 비활성화
         status_label.config(text=message)
 
 # RFID 스캔 및 프린터 출력 처리 함수
@@ -115,24 +119,12 @@ def rfid_process():
             info_text = [
                 f"[RFID ID]: {id}",
                 f"[URL]: {participation_qr_data}",
-                
                 "[장 소] CICA 미술관 3-A 전시실",
                 "[날 짜] 2025.03.26 - 2025.03.30",
                 "[시 간] 10:30 - 17:30",
                 "======================",
-                "몇 동 몇 호",
-                "Which unit number is your house?",
-                "======================",
-                "*참여 가이드",
-                "1. Wi-Fi에 연결해주세요.",
-                "2. QR 코드를 스캔하여 작품의 세계에 참여하세요.",
-                "",
-                "*Wi-Fi 정보",
-                "SSID: 아무개의 방_WiFi",
-                "P.W: 1234abcd",
-                "",
                 "*참여 QR 코드",
-            ]           
+            ]
             y_offset = 55
             for line in info_text:
                 draw.text((10, y_offset), line, fill="black", font=font_small)
@@ -163,7 +155,8 @@ def rfid_process():
             printer.write(image_data)
             printer.write(b'\x1d\x56\x42\x00')
 
-            update_status("인식 완료!")  # 완료 상태 메시지
+            # 로딩 애니메이션 종료 및 완료 메시지 표시
+            update_status("인식 완료!", loading=False)
             print("영수증 출력 완료")
             time.sleep(2)  # 2초 대기
     finally:
