@@ -24,7 +24,7 @@ receipt_img = Image.new("RGB", (width, height), "white")
 draw = ImageDraw.Draw(receipt_img)
 
 # 폰트 설정
-font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"  # 라즈베리파이 폰트 경로
+font_path = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"  # 라즈베리파이 한글 폰트 경로
 font_small = ImageFont.truetype(font_path, 26)
 font_large = ImageFont.truetype(font_path, 30)
 
