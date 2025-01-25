@@ -1,5 +1,5 @@
 import serial
-from PIL import Image, ImageDraw, ImageFont, ImageTk
+from PIL import Image, ImageDraw, ImageFont  # ImageTk 제거
 import qrcode
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
