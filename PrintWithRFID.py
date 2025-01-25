@@ -58,10 +58,11 @@ exit_label.pack(side="bottom")
 loading_dots = 0
 loading_active = False
 
-def update_status(message, loading=False):
+def update_status(message, loading=False, reset_after=None):
     """상태 메시지 업데이트 함수
     - message: 기본 메시지 텍스트
     - loading: 로딩 애니메이션 활성화 여부
+    - reset_after: 일정 시간 후 상태를 초기화 (초 단위)
     """
     global loading_dots, loading_active
     if loading:
@@ -74,6 +75,8 @@ def update_status(message, loading=False):
     else:
         loading_active = False  # 로딩 비활성화
         status_label.config(text=message)
+        if reset_after:
+            root.after(reset_after * 1000, lambda: update_status("태그를 인식해주세요"))  # 일정 시간 후 초기화
 
 # RFID 스캔 및 프린터 출력 처리 함수
 def rfid_process():
@@ -156,7 +159,7 @@ def rfid_process():
             printer.write(b'\x1d\x56\x42\x00')
 
             # 로딩 애니메이션 종료 및 완료 메시지 표시
-            update_status("인식 완료!", loading=False)
+            update_status("인식 완료!", loading=False, reset_after=2)  # 2초 후 초기화
             print("영수증 출력 완료")
             time.sleep(2)  # 2초 대기
     finally:
