@@ -56,7 +56,6 @@ exit_label.pack(side="bottom")
 
 # 상태 메시지 업데이트 함수
 loading_dots = 0
-loading_active = False
 rfid_enabled = True  # 태그 입력 활성화 여부
 
 def update_status(message, loading=False):
@@ -64,23 +63,21 @@ def update_status(message, loading=False):
     - message: 기본 메시지 텍스트
     - loading: 로딩 애니메이션 활성화 여부
     """
-    global loading_dots, loading_active
+    global loading_dots
     if loading:
-        loading_active = True
         loading_dots = (loading_dots + 1) % 4  # 점 개수 (0~3)
         dots = "." * loading_dots
         status_label.config(text=f"{message}{dots}")
-        if loading_active:
-            root.after(500, update_status, message, True)  # 500ms 후 다시 실행
+        root.after(500, update_status, message, True)  # 500ms 후 다시 실행
     else:
-        loading_active = False
         status_label.config(text=message)
 
 def reset_to_waiting():
     """태그 입력 대기 상태로 복구"""
     global rfid_enabled
-    update_status("태그를 인식해주세요")  # 상태 초기화
     rfid_enabled = True  # 태그 입력 활성화
+    update_status("태그를 인식해주세요")  # 상태 초기화
+    print("RFID 스캔 대기 중...")  # 콘솔 출력
 
 # RFID 스캔 및 프린터 출력 처리 함수
 def rfid_process():
@@ -88,7 +85,7 @@ def rfid_process():
     try:
         while True:
             if not rfid_enabled:
-                time.sleep(0.1)  # 비활성화 상태에서는 루프를 대기
+                time.sleep(0.1)  # 태그 입력 비활성화 상태에서 대기
                 continue
 
             update_status("태그를 인식해주세요")  # 대기 상태 메시지
