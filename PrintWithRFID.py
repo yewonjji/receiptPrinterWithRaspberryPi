@@ -167,10 +167,12 @@ def rfid_process():
             printer.write(image_data)
             printer.write(b'\x1d\x56\x42\x00')
 
-            # 로딩 애니메이션 종료 및 완료 메시지 표시
+            # "인식 완료!" 상태 유지
             update_status("인식 완료!", loading=False)
             print("영수증 출력 완료")
-            root.after(5000, reset_to_waiting)  # 5초 후 태그 입력 대기 상태로 복구
+
+            # 5초 후 다시 태그 입력 활성화
+            root.after(5000, reset_to_waiting)
     finally:
         GPIO.cleanup()
         printer.close()
