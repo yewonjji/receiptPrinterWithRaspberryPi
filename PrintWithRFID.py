@@ -1,5 +1,5 @@
 import serial
-from PIL import Image, ImageDraw, ImageFont  # ImageTk 제거
+from PIL import Image, ImageDraw, ImageFont
 import qrcode
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
@@ -30,14 +30,46 @@ root = tk.Tk()
 root.title("RFID 상태")
 root.attributes("-fullscreen", True)  # 전체화면 설정
 
+# ESC 키로 전체 화면 해제
+def exit_fullscreen(event):
+    root.attributes("-fullscreen", False)  # 전체 화면 해제
+    print("전체 화면 모드 해제")
+
+# ESC 키로 프로그램 종료
+def close_program(event):
+    print("프로그램 종료")
+    root.destroy()  # Tkinter 창 닫기
+    GPIO.cleanup()  # GPIO 핀 정리
+    printer.close()  # 프린터 포트 닫기
+
+# ESC 키와 Ctrl+C를 바인딩
+root.bind("<Escape>", exit_fullscreen)  # 전체 화면 해제
+root.bind("<Control-c>", close_program)  # Ctrl+C로 프로그램 종료
+
 # 상태 메시지 라벨
 status_label = tk.Label(root, text="태그를 인식해주세요", font=("NanumGothic", 48), bg="white", fg="black")
 status_label.pack(expand=True, fill="both")
 
+# 하단 안내 메시지 라벨
+exit_label = tk.Label(root, text="(ESC: 전체 화면 해제, Ctrl+C: 종료)", font=("Arial", 12), bg="white", fg="gray")
+exit_label.pack(side="bottom")
+
 # 상태 메시지 업데이트 함수
-def update_status(message):
-    status_label.config(text=message)
-    root.update_idletasks()
+loading_dots = 0
+
+def update_status(message, loading=False):
+    """상태 메시지 업데이트 함수
+    - message: 기본 메시지 텍스트
+    - loading: 로딩 애니메이션 활성화 여부
+    """
+    global loading_dots
+    if loading:
+        loading_dots = (loading_dots + 1) % 4  # 점 개수 (0~3)
+        dots = "." * loading_dots
+        status_label.config(text=f"{message}{dots}")
+        root.after(500, update_status, message, True)  # 500ms 후 다시 실행
+    else:
+        status_label.config(text=message)
 
 # RFID 스캔 및 프린터 출력 처리 함수
 def rfid_process():
@@ -48,8 +80,9 @@ def rfid_process():
             id = reader.read()[0]  # RFID 카드 ID 읽기
             print(f"RFID ID 읽음: {id}")
 
-            update_status("인식 중입니다")  # 인식 중 상태 메시지
-            time.sleep(1)  # 처리 시간 시뮬레이션
+            # 로딩 애니메이션 시작
+            update_status("인식 중", loading=True)
+            time.sleep(3)  # 처리 시간 시뮬레이션
 
             # URL 매핑
             participation_qr_data = rfid_url_mapping.get(id, "https://example.com/default")
@@ -82,12 +115,24 @@ def rfid_process():
             info_text = [
                 f"[RFID ID]: {id}",
                 f"[URL]: {participation_qr_data}",
+                
                 "[장 소] CICA 미술관 3-A 전시실",
                 "[날 짜] 2025.03.26 - 2025.03.30",
                 "[시 간] 10:30 - 17:30",
                 "======================",
+                "몇 동 몇 호",
+                "Which unit number is your house?",
+                "======================",
+                "*참여 가이드",
+                "1. Wi-Fi에 연결해주세요.",
+                "2. QR 코드를 스캔하여 작품의 세계에 참여하세요.",
+                "",
+                "*Wi-Fi 정보",
+                "SSID: 아무개의 방_WiFi",
+                "P.W: 1234abcd",
+                "",
                 "*참여 QR 코드",
-            ]
+            ]           
             y_offset = 55
             for line in info_text:
                 draw.text((10, y_offset), line, fill="black", font=font_small)
